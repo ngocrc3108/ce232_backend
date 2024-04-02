@@ -10,10 +10,14 @@ const cors = require('cors')
 const deviceController = require('./src/routers/device')
 const path = require('path');
 
-mqttRouteInit()
+const origin = process.env.NODE_ENV === 'production' ? "https://ce232-fontend.onrender.com" : "http://127.0.0.1:3000"
+
+console.log("origin", origin)
+
+//mqttRouteInit()
 
 // constaints
-const PORT = process.env.PORT | 4001 
+const PORT = process.env.PORT || 4001 
 const http = app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`)
 })
@@ -21,6 +25,7 @@ const sessionMiddleware = session({
     secret : process.env.SECRET_KEY,
     resave : true,
     saveUninitialized : true,
+    cookie : {sameSite: 'none', secure : true}
 })
 
 global.io = require("socket.io")(http)
@@ -37,8 +42,17 @@ mongoose.connect(process.env.DATABASE_URL)
     })
     .catch((err) => console.log(err))
 
-app.use(express.static(path.join(__dirname, '../fontend/build')));
-app.use(cors())
+app.set("trust proxy", 1); // -------------- FIRST CHANGE ----------------
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Credentials", true);
+    res.header("Access-Control-Allow-Origin", "https://my.godaddy.subdomain");
+    res.header("Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-HTTP-Method-Override, Set-Cookie, Cookie");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+    next();  
+ });    // --------------- SECOND CHANGE -------------------
+app.use(express.static(path.join(__dirname, '../ce232_fontend/build')));
+app.use(cors({origin, credentials : true}))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(sessionMiddleware)
