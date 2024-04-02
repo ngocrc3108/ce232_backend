@@ -1,0 +1,29 @@
+{
+  "name": "websocket",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon main",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "express-session": "^1.18.0",
+    "express-validator": "^7.0.1",
+    "express-ws": "^5.0.2",
+    "mongoose": "^8.2.2",
+    "mqtt": "^5.4.0",
+    "mqtt-simple-router": "^1.2.0",
+    "nodemon": "^3.1.0",
+    "path": "^0.12.7",
+    "pug": "^3.0.2",
+    "socket.io": "^4.7.5",
+    "ws": "^8.16.0"
+  }
+}
