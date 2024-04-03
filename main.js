@@ -9,7 +9,7 @@ const {findUserBySeassion} = require('./src/controller/authController')
 const cors = require('cors')
 const deviceController = require('./src/routers/device')
 
-//mqttRouteInit()
+mqttRouteInit()
 
 // constaints
 const PORT = process.env.PORT || 4001 
@@ -65,5 +65,4 @@ app.use(express.urlencoded({ extended: true }))
 app.use(sessionMiddleware)
 app.use('/auth', authenticate)
 app.use(findUserBySeassion) // require user login
-
 app.use('/device', deviceController)
