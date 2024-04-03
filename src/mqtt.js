@@ -1,7 +1,8 @@
+require('dotenv').config()
 const mqtt = require("mqtt");
 const client = mqtt.connect("mqtt://mqtt.flespi.io", {
-    username: "B98DeTbKkg8XPIVnXlIGl49CVOM0YxApxyTBfS9qZ5bEEWPp5nVggUH1xjPlFgB0",
-    clientId: "nodejs_server",
+    username: process.env.MQTT_USERNAME,
+    clientId: "nodejs_server"
 });
 const mqttRouter = require('mqtt-simple-router')
 const router = new mqttRouter()
@@ -10,6 +11,8 @@ const {Led, Door, Fan} = require("../src/models/device")
 const controlRequests = {count : 0,
                         cmds : []
 };
+
+console.log("MQTT_USERNAME", process.env.MQTT_USERNAME)
 
 const pushCmd = (object) => {
     controlRequests.cmds.push({...object,
