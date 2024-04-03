@@ -3,7 +3,8 @@ const client = mqtt.connect("mqtt://mqtt.flespi.io", {
     username: "B98DeTbKkg8XPIVnXlIGl49CVOM0YxApxyTBfS9qZ5bEEWPp5nVggUH1xjPlFgB0",
     clientId: "nodejs_server",
 });
-
+const mqttRouter = require('mqtt-simple-router')
+const router = new mqttRouter()
 const {Led, Door, Fan} = require("../src/models/device")
 
 const controlRequests = {count : 0,
@@ -43,9 +44,6 @@ const checkCmdDate = () => {
 }
 
 setInterval(checkCmdDate, 200)
-
-const mqttRouter = require('mqtt-simple-router')
-const router = new mqttRouter()
 
 const getParameter = (query, key) => {
     var index = query.indexOf(key)

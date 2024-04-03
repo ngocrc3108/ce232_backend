@@ -31,7 +31,7 @@ module.exports.createDoor = async (req, res) => {
 }
 
 module.exports.getDevices = async (req, res) => {
-    console.log(req.user)
+    console.log("get device was called")
     const userId =  req.user._id;
 
     var devices = await Promise.all([Fan.find({userId}),
