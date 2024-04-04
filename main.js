@@ -8,8 +8,8 @@ const authenticate = require("./src/routers/authenticate");
 const { findUserBySeassion } = require("./src/controller/authController");
 const cors = require("cors");
 const deviceController = require("./src/routers/device");
-
-mqttRouteInit();
+const MongoStore = require("connect-mongo");
+//mqttRouteInit();
 
 // constaints
 const PORT = process.env.PORT || 4001;
@@ -17,11 +17,19 @@ const http = app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);
 });
 
+
+global.mongoStore = MongoStore.create({
+    mongoUrl : process.env.DATABASE_URL,
+    dbName: "Khong_day"
+})
+
 let sessionOption = {
     secret: process.env.SECRET_KEY,
-    resave: true,
+    resave: false,
     saveUninitialized: true,
+    store : mongoStore
 };
+
 
 let socketOption = {};
 
@@ -73,12 +81,15 @@ io.on("connection", function (socket) {
     console.log("socket connected");
 });
 
-mongoose
-    .connect(process.env.DATABASE_URL)
-    .then(() => {
-        console.log("Connect to db");
-    })
-    .catch((err) => console.log(err));
+mongoose.connect(process.env.DATABASE_URL)
+
+mongoose.connection
+.on("open", () => console.log("The goose is open"))
+.on("close", () => console.log("The goose is closed"))
+.on("error", (error) => {
+    console.log(error);
+    process.exit();
+})
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

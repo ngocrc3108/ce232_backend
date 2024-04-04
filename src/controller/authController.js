@@ -3,8 +3,8 @@ const bcrypt = require('bcrypt')
 const {validationResult} = require("express-validator")
 
 module.exports.isLoggedIn = (req, res) => {
-    console.log("is logged in was called", !!req.session.loggedIn)
-    res.send({loggedIn : !!req.session.loggedIn})
+    console.log("is logged in was called", !!req.session.userId)
+    res.send({loggedIn : !!req.session.userId})
 }
 
 module.exports.register = async (req, res) => {
@@ -47,11 +47,10 @@ module.exports.login = async (req, res) => {
             return                
         }
         
-        req.session.loggedIn = true;
+        req.session.userId = user._id
         console.log("auth/login: success")
-        user.seasionID = req.sessionID
-        await user.save()
         res.send({success : true, message : "Logic successfully"})
+
     } catch (err) {
         console.log(err)
         res.status(500).send(err)
@@ -60,10 +59,9 @@ module.exports.login = async (req, res) => {
 
 module.exports.findUserBySeassion = async (req, res, next) => {
     try {
-        const user = await Users.findOne({seasionID : req.sessionID})
+        const user = await Users.findById(req.session.userId)
         if(user !== null && user?.seasionID != "") {
             req.user = user
-            //console.log(user)
             next()
         }
         else
@@ -75,15 +73,9 @@ module.exports.findUserBySeassion = async (req, res, next) => {
 
 module.exports.logout = async (req, res) => {
     try {
-        const user = await Users.findOne({seasionID : req.sessionID})
-        if(user !== null) {
-            user.seasionID = ""
-            await user.save()
-            res.send({success : true, message : "logout successfully"})
-        }
-        else
-            res.send({success : false, message : "you have not logged in yet"})
+        req.session.userId = ""
+        res.send({success : true, message : "logout successfully"})
     } catch (err) {
         console.log(err)
-    } 
+    }
 }
