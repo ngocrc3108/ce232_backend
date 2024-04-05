@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { mqttRouteInit, mqtt } = require("./src/mqtt");
+const { mqttRouteInit } = require("./src/mqtt");
 const express = require("express");
 const app = express();
 const {mongoStore} = require("./src/mongodb")
@@ -8,8 +8,7 @@ const authenticate = require("./src/routers/authenticate");
 const { findUserBySeassion } = require("./src/controller/authController");
 const cors = require("cors");
 const deviceController = require("./src/routers/device");
-
-//mqttRouteInit();
+const {socketInit} = require("./src/socket")
 
 // constaints
 const PORT = process.env.PORT || 4001;
@@ -24,24 +23,15 @@ let sessionOption = {
     store : mongoStore
 };
 
-let socketOption = {};
-
 if (process.env.NODE_ENV === "production") {
-    const origin = "https://ce232-fontend.onrender.com"
     console.log("app is running on production");
 
     sessionOption = {
         ...sessionOption,
         cookie: { sameSite: "none", secure: true },
     };
-    socketOption = {
-        cors: {
-            origin,
-            credentials: true,
-        },
-    };
+
     console.log("sessionOption", sessionOption);
-    console.log("socketOption", socketOption);
     app.set("trust proxy", 1); // -------------- FIRST CHANGE ----------------
     app.use(function (req, res, next) {
         res.header("Access-Control-Allow-Credentials", true);
@@ -58,7 +48,7 @@ if (process.env.NODE_ENV === "production") {
     }); // --------------- SECOND CHANGE -------------------
     app.use(
         cors({
-            origin,
+            origin : process.env.ORIGIN,
             credentials: true,
         })
     );
@@ -66,13 +56,8 @@ if (process.env.NODE_ENV === "production") {
 
 const sessionMiddleware = session(sessionOption);
 
-global.io = require("socket.io")(http, socketOption);
-io.engine.use(sessionMiddleware);
-io.on("connection", function (socket) {
-    const sessionId = socket.request.session.id;
-    socket.join(sessionId);
-    console.log("socket connected");
-});
+socketInit(http, sessionMiddleware);
+//mqttRouteInit();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

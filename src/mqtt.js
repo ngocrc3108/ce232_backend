@@ -1,4 +1,6 @@
 require('dotenv').config()
+let {socketSend} = require("../src/socket")
+
 const mqtt = require("mqtt");
 const client = mqtt.connect("mqtt://mqtt.flespi.io", {
     username: process.env.MQTT_USERNAME,
@@ -39,8 +41,7 @@ const checkCmdDate = () => {
         if(time - cmd.time.getTime() < 10000)
             newCmd.push(cmd)
         else {
-            io.to(cmd.sessionId).emit(`res/${cmd.deviceId}/state`, {...cmd, success: false})
-            console.log("cmd expired", cmd)  
+            socketSend(cmd.sessionId, `res/${cmd.deviceId}/state`, {...cmd, success: false})
         }
     })
     controlRequests.cmds = newCmd
@@ -73,7 +74,6 @@ const getParameter = (query, key) => {
 router.auto('esp32/led', async function(request) {
     console.log('esp32/led was called')
     const query = request.payload.toString()
-    console.log(query)
 
     if(getParameter(query, "success=") == "true") {
         const requestId = getParameter(query, "requestId=")
@@ -83,13 +83,10 @@ router.auto('esp32/led', async function(request) {
 
         if(cmd.cmd == "setState") {
             console.log("detect setState")
-            io.to(cmd.sessionId).emit(`res/${cmd.deviceId}/state`, {...cmd, success: true})
-            console.log(cmd)
+            socketSend(cmd.sessionId, `res/${cmd.deviceId}/state`, {...cmd, success: true})
             const led = await Led.findById(cmd.deviceId)
-            console.log(led)
             led.status = cmd.state
             await led.save()
-            console.log(controlRequests)
         }    
     }
 });
@@ -97,7 +94,6 @@ router.auto('esp32/led', async function(request) {
 router.auto('esp32/door', async function(request) {
     console.log('esp32/door was called')
     const query = request.payload.toString()
-    console.log(query)
 
     if(getParameter(query, "success=") == "true") {
         const requestId = getParameter(query, "requestId=")
@@ -107,13 +103,10 @@ router.auto('esp32/door', async function(request) {
 
         if(cmd.cmd == "setState") {
             console.log("detect setState")
-            io.to(cmd.sessionId).emit(`res/${cmd.deviceId}/state`, {...cmd, success: true})
-            console.log(cmd)
+            socketSend(cmd.sessionId, `res/${cmd.deviceId}/state`, {...cmd, success: true})
             const door = await Door.findById(cmd.deviceId)
-            console.log(door)
             door.status = cmd.state
             await door.save()
-            console.log(controlRequests)
         }    
     }
 });
@@ -121,7 +114,6 @@ router.auto('esp32/door', async function(request) {
 router.auto('esp32/fan', async function(request) {
     console.log('esp32/fan was called')
     const query = request.payload.toString()
-    console.log(query)
 
     if(getParameter(query, "success=") == "true") {
         const requestId = getParameter(query, "requestId=")
@@ -130,27 +122,19 @@ router.auto('esp32/fan', async function(request) {
             return
 
         if(cmd.cmd == "setState") {
-            console.log("detect setState")
-            io.to(cmd.sessionId).emit(`res/${cmd.deviceId}/state`, {...cmd, success: true})
-            console.log(cmd)
+            socketSend(cmd.sessionId, `res/${cmd.deviceId}/state`, {...cmd, success: true})
             const fan = await Fan.findById(cmd.deviceId)
-            console.log(fan)
             fan.status = cmd.state
             await fan.save()
-            console.log(controlRequests)
         } else if(cmd.cmd == "setLevel") {
             console.log("detect setLevel")
-            io.to(cmd.sessionId).emit(`res/${cmd.deviceId}/level`, {...cmd, success: true})
-            console.log(cmd)
+            socketSend(cmd.sessionId, `res/${cmd.deviceId}/level`, {...cmd, success: true})
             const fan = await Fan.findById(cmd.deviceId)
-            console.log(fan)
             fan.level = cmd.level
             await fan.save()
-            console.log(controlRequests)
         }
     }
 });
-
 
 const mqttRouteInit = () => {
     client.on("connect", () => {
