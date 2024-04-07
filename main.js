@@ -1,5 +1,4 @@
 require("dotenv").config();
-const { mqttRouteInit } = require("./src/mqtt");
 const express = require("express");
 const app = express();
 const {mongoStore} = require("./src/mongodb")
@@ -57,7 +56,6 @@ if (process.env.NODE_ENV === "production") {
 const sessionMiddleware = session(sessionOption);
 
 socketInit(http, sessionMiddleware);
-mqttRouteInit();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

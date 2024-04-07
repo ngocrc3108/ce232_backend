@@ -4,12 +4,15 @@ const {Led, Fan, Door} = require("./models/device")
 const mqtt = require("mqtt");
 const mqttRouter = require('mqtt-simple-router')
 
+const router = new mqttRouter()
 const client = mqtt.connect("mqtt://mqtt.flespi.io", {
     username: process.env.MQTT_USERNAME,
     clientId: "nodejs_server"
 });
-const router = new mqttRouter()
-
+client.on("connect", () => {
+    console.log("mqtt connected")
+    router.wrap(client)
+})
 const controlRequests = {count : 0,
                         cmds : []
 };
@@ -87,12 +90,4 @@ router.auto('esp32/:type', async function(request) {
     }
 });
 
-const mqttRouteInit = () => {
-    client.on("connect", () => {
-        console.log("mqtt connected")
-        router.wrap(client)
-    })
-    return client
-}
-
-module.exports = {mqttRouteInit, pushCmd, controlRequests, client}
+module.exports = {pushCmd, controlRequests, client}
