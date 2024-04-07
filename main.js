@@ -57,7 +57,7 @@ if (process.env.NODE_ENV === "production") {
 const sessionMiddleware = session(sessionOption);
 
 socketInit(http, sessionMiddleware);
-//mqttRouteInit();
+mqttRouteInit();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

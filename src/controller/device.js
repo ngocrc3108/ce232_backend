@@ -45,66 +45,30 @@ module.exports.getDevices = async (req, res) => {
     res.send(devices)
 }
 
-module.exports.setFanStatus = async (req, res) => {
+module.exports.setState = async (req, res) => {
+    const {state, deviceId } = req.body
+    const { type } = req.params
+    console.log(`set state for ${type}, id: ${deviceId}`)
+    let Model;
+    switch(type) {
+        case "led": Model = Led; break;
+        case "fan": Model = Fan; break;
+        case "door": Model = Door; break;
+        default : return;
+    }
 
-    const {deviceId, status} = req.body
-    console.log("set fan was call")
-
-    const fan = await Fan.findOne({_id : deviceId, userId : req.user._id})
-    if(fan !== null) {
+    const device = await Model.findById(deviceId)
+    if(device != null) {
         const requestId = pushCmd({
             sessionId : req.sessionID,
             deviceId,
             cmd : "setState",
-            state : status
+            state
         })
-        client.publishAsync(deviceId, `cmd=setState&requestId=${requestId}&state=${status ? "on" :"off"}`)
-        console.log(controlRequests)
+        client.publishAsync(deviceId, `cmd=setState&requestId=${requestId}&state=${state ? "1" :"0"}`)
         res.send({message : "sent command successfully"})
-        return
+        return        
     }
-    res.send({message : "device not found"})
-}
-
-module.exports.setLedStatus = async (req, res) => {
-
-    const {deviceId, status} = req.body
-    console.log("set led was call")
-
-    const led = await Led.findOne({_id : deviceId, userId : req.user._id})
-    if(led !== null) {
-        const requestId = pushCmd({
-            sessionId : req.sessionID,
-            deviceId,
-            cmd : "setState",
-            state : status
-        })
-        client.publishAsync(deviceId, `cmd=setState&requestId=${requestId}&state=${status ? "on" :"off"}`)
-        console.log(controlRequests)
-        res.send({message : "sent command successfully"})
-        return
-    }
-    res.send({message : "device not found"})
-}
-
-module.exports.setDoorStatus = async (req, res) => {
-    const {deviceId, status} = req.body
-    console.log("set led was call")
-
-    const door = await Door.findOne({_id : deviceId, userId : req.user._id})
-    if(door !== null) {
-        const requestId = pushCmd({
-            sessionId : req.sessionID,
-            deviceId,
-            cmd : "setState",
-            state : status
-        })
-        client.publishAsync(deviceId, `cmd=setState&requestId=${requestId}&state=${status ? "on" :"off"}`)
-        console.log(controlRequests)
-        res.send({message : "sent command successfully"})
-        return
-    }
-    res.send({message : "device not found"})
 }
 
 module.exports.setLedTime = async (req, res) => {
@@ -132,7 +96,6 @@ module.exports.setFanLevel = async (req, res) => {
             level : level
         })
         client.publishAsync(deviceId, `cmd=setLevel&requestId=${requestId}&level=${level}`)
-        console.log(controlRequests)
         res.send({message : "sent command successfully"})
         return
     }

@@ -1,14 +1,14 @@
 require('dotenv').config()
-let {socketSend} = require("../src/socket")
-
+const {socketSend} = require("../src/socket")
+const {Led, Fan, Door} = require("./models/device")
 const mqtt = require("mqtt");
+const mqttRouter = require('mqtt-simple-router')
+
 const client = mqtt.connect("mqtt://mqtt.flespi.io", {
     username: process.env.MQTT_USERNAME,
     clientId: "nodejs_server"
 });
-const mqttRouter = require('mqtt-simple-router')
 const router = new mqttRouter()
-const {Led, Door, Fan} = require("../src/models/device")
 
 const controlRequests = {count : 0,
                         cmds : []
@@ -59,23 +59,12 @@ const getParameter = (query, key) => {
     return ""
 }
 
-// middleware to convert JSON to object
-// router.auto('esp32/#', function(request, next) {
-//     request.payload = JSON.parse(request.payload)
-
-//     const {deviceId, status} = request.payload
-//     console.log(deviceId)
-
-//     // find obj in DB  using deviceId
-
-//     next()
-// });
-
-router.auto('esp32/led', async function(request) {
-    console.log('esp32/led was called')
+router.auto('esp32/:type', async function(request) {
+    const { type } = request.params
     const query = request.payload.toString()
+    console.log(`esp32/${type} was called`)
 
-    if(getParameter(query, "success=") == "true") {
+    if(getParameter(query, "success=") == "1") {
         const requestId = getParameter(query, "requestId=")
         const cmd = popCmd(requestId)
         if(cmd === undefined) 
@@ -84,54 +73,16 @@ router.auto('esp32/led', async function(request) {
         if(cmd.cmd == "setState") {
             console.log("detect setState")
             socketSend(cmd.sessionId, `res/${cmd.deviceId}/state`, {...cmd, success: true})
-            const led = await Led.findById(cmd.deviceId)
-            led.status = cmd.state
-            await led.save()
-        }    
-    }
-});
-
-router.auto('esp32/door', async function(request) {
-    console.log('esp32/door was called')
-    const query = request.payload.toString()
-
-    if(getParameter(query, "success=") == "true") {
-        const requestId = getParameter(query, "requestId=")
-        const cmd = popCmd(requestId)
-        if(cmd === undefined) 
-            return
-
-        if(cmd.cmd == "setState") {
-            console.log("detect setState")
-            socketSend(cmd.sessionId, `res/${cmd.deviceId}/state`, {...cmd, success: true})
-            const door = await Door.findById(cmd.deviceId)
-            door.status = cmd.state
-            await door.save()
-        }    
-    }
-});
-
-router.auto('esp32/fan', async function(request) {
-    console.log('esp32/fan was called')
-    const query = request.payload.toString()
-
-    if(getParameter(query, "success=") == "true") {
-        const requestId = getParameter(query, "requestId=")
-        const cmd = popCmd(requestId)
-        if(cmd === undefined) 
-            return
-
-        if(cmd.cmd == "setState") {
-            socketSend(cmd.sessionId, `res/${cmd.deviceId}/state`, {...cmd, success: true})
-            const fan = await Fan.findById(cmd.deviceId)
-            fan.status = cmd.state
-            await fan.save()
-        } else if(cmd.cmd == "setLevel") {
-            console.log("detect setLevel")
-            socketSend(cmd.sessionId, `res/${cmd.deviceId}/level`, {...cmd, success: true})
-            const fan = await Fan.findById(cmd.deviceId)
-            fan.level = cmd.level
-            await fan.save()
+            let model;
+            switch(type) {
+                case "led": model = Led; break;
+                case "fan": model = Fan; break;
+                case "door": model = Door; break;
+                default : return;
+            }
+            const device = await model.findById(cmd.deviceId)
+            device.state = cmd.state
+            await device.save()
         }
     }
 });
