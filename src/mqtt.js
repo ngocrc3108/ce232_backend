@@ -1,4 +1,5 @@
 require('dotenv').config()
+const e = require('cors');
 const {socketSend} = require("../src/socket")
 const {Led, Fan, Door} = require("./models/device")
 const mqtt = require("mqtt");
@@ -67,9 +68,12 @@ router.auto('esp32/:type', async function(request) {
     const query = request.payload.toString()
     console.log(`esp32/${type} was called`)
 
+    console.log(query)
     if(getParameter(query, "success=") == "1") {
+        console.log("here")
         const requestId = getParameter(query, "requestId=")
         const cmd = popCmd(requestId)
+        console.log(cmd)
         if(cmd === undefined) 
             return
 
@@ -86,6 +90,12 @@ router.auto('esp32/:type', async function(request) {
             const device = await model.findById(cmd.deviceId)
             device.state = cmd.state
             await device.save()
+        } else if(cmd.cmd == "setLevel") {
+            console.log("detect setLevel")
+            socketSend(cmd.sessionId, `res/${cmd.deviceId}/level`, {...cmd, success: true})
+            const device = await Fan.findById(cmd.deviceId)
+            device.level = cmd.level
+            await device.save()       
         }
     }
 });
