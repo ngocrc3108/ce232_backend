@@ -9,16 +9,20 @@ module.exports.isLoggedIn = (req, res) => {
 
 module.exports.register = async (req, res) => {
     const {username, password} = req.body
-    const errors = validationResult(req)
+    const validateResult = validationResult(req)
 
-    var errMessage = ""
-    errors.array().forEach(err => errMessage += err + " ")
+    var messages = []
+    if(!validateResult.isEmpty()) {
+        messages = validateResult.array().map(err => err.msg)
+        console.log(messages)
+        res.send({success : false, messages})
+        return
+    }
 
     if(await Users.findOne({username}) !== null) {
-        res.render("register", {
-            password,
-            username, 
-            messages : [{msg : "This username has already been used by another user!"}]
+        res.send({
+            success: false,
+            messages: ["This username has already been used by another user!"],
         })
         console.log("auth/register: username has already been used by another user!")
         return
@@ -30,9 +34,7 @@ module.exports.register = async (req, res) => {
         password : hashedPassword
     })
 
-    res.render("register", {
-        messages : [{msg : "Register successfully, login now!"}]
-    })
+    res.send({ success: true, messages: ["Register successfully, login now!"] });
     console.log("auth/signup: success")
 }
 
