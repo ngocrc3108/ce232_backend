@@ -15,7 +15,10 @@ const ledsSchema = new mongoose.Schema ({
     userId : String,
     name : String,
     state : {type : Boolean, default : false},
-    time : Date
+    schedule : {
+        time : {type : Date, default : new Date()},
+        option : {type : String, default : "NONE"},
+    },
 }, {timestamps:true})
 
 ledsSchema.virtual("type").get(function() {return "led"})

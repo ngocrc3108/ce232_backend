@@ -63,13 +63,13 @@ module.exports.setState = async (req, res) => {
     }
 }
 
-module.exports.setLedTime = async (req, res) => {
-    const {deviceId, time} = req.body;
+module.exports.setSchedule = async (req, res) => {
+    var {deviceId, schedule} = req.body;
     const led = await Led.findOne({_id : deviceId, userId : req.user._id})
     if(led !== null) {
-        led.time = time
+        led.schedule = schedule
         await led.save()
-        res.send({message : "set led time successfully"})
+        res.send({message : "set led schedule successfully"})
         return
     }
     res.send({message : "device not found"})    
