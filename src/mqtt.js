@@ -63,10 +63,43 @@ const getParameter = (query, key) => {
     return ""
 }
 
-router.auto('esp32/:type', async function(request) {
+router.auto('esp32/fan/sync', async function(request) {
+    const query = request.payload.toString()
+    console.log(`esp32/fan/sync was called`)
+
+    console.log(query)
+    const deviceId = getParameter(query, "id=")
+    const fan = await Fan.findById(deviceId)
+    const {state, level} = fan
+    client.publishAsync(deviceId, `cmd=sync&state=${state}&level=${level}`)
+});
+
+router.auto('esp32/led/sync', async function(request) {
+    const query = request.payload.toString()
+    console.log(`esp32/led/sync was called`)
+
+    console.log(query)
+    const deviceId = getParameter(query, "id=")
+    const led = await Led.findById(deviceId)
+    const {state} = led
+    client.publishAsync(deviceId, `cmd=sync&state=${state}`)
+});
+
+router.auto('esp32/door/sync', async function(request) {
+    const query = request.payload.toString()
+    console.log(`esp32/door/sync was called`)
+
+    console.log(query)
+    const deviceId = getParameter(query, "id=")
+    const door = await Door.findById(deviceId)
+    const {state} = door
+    client.publishAsync(deviceId, `cmd=sync&state=${state}`)
+});
+
+router.auto('esp32/:type/response', async function(request) {
     const { type } = request.params
     const query = request.payload.toString()
-    console.log(`esp32/${type} was called`)
+    console.log(`esp32/${type}/response was called`)
 
     console.log(query)
     if(getParameter(query, "success=") == "1") {

@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const fansSchema = new mongoose.Schema ({
     userId : String,
     name : String,
-    state : {type : Boolean, default : false},
+    state : {type : Number, default : 0},
     level : {type : Number, default : 0, min : 0, max : 2} 
 }, {timestamps:true})
 
@@ -14,7 +14,7 @@ module.exports.Fan = mongoose.model('fans', fansSchema)
 const ledsSchema = new mongoose.Schema ({
     userId : String,
     name : String,
-    state : {type : Boolean, default : false},
+    state : {type : Number, default : 0},
     schedule : {
         time : {type : Date, default : new Date()},
         option : {type : String, default : "NONE"},
@@ -28,7 +28,7 @@ module.exports.Led = mongoose.model('leds', ledsSchema)
 const doorsSchema = new mongoose.Schema ({
     userId : String,
     name : String,
-    state : {type : Boolean, default : false},
+    state : {type : Number, default : 0},
 }, {timestamps:true})
 
 doorsSchema.virtual("type").get(function() {return "door"})
