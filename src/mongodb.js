@@ -4,10 +4,10 @@ const MongoStore = require("connect-mongo");
 const mongoOnOpen = (callback) => {
     mongoose.connection
     .on("open", () => {
-        console.log("The goose is open");
+        console.log("mongodb is connected");
         callback();
     })
-    .on("close", () => console.log("The goose is closed"))
+    .on("close", () => console.log("mongodb is closed"))
     .on("error", (error) => {
         console.log(error);
         process.exit();

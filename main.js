@@ -53,17 +53,24 @@ if (process.env.NODE_ENV === "production") {
 
 const sessionMiddleware = session(sessionOption);
 
-mongoOnOpen(() => {
-    const http = app.listen(PORT, () => {
-        console.log(`Server is listening on port ${PORT}`);
-    });
-    socketInit(http, sessionMiddleware);
-    mqttInit();
-});
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(sessionMiddleware);
 app.use("/auth", authenticate);
 app.use(findUserBySeassion); // require user login
 app.use("/device", deviceController);
+
+mongoOnOpen(async () => {
+    const http = app.listen(PORT, () => {
+        console.log(`Server is listening on port ${PORT}`);
+    });
+    socketInit(http, sessionMiddleware);
+    mqttInit();
+
+    // led scheduler (Tung).
+    // example
+    console.log("find all leds");
+    const { Led } = require("./src/models/device");
+    const leds = await Led.find({}); // find all record
+    console.log(leds);
+});

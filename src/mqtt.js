@@ -7,15 +7,15 @@ const mqttRouter = require('mqtt-simple-router')
 const router = new mqttRouter()
 let client;
 
-const mqttInit = () => {
+const mqttInit = async () => {
     client = mqtt.connect("mqtt://mqtt.flespi.io", {
        username: process.env.MQTT_USERNAME,
        clientId: "nodejs_server"
    });
    client.on("connect", () => {
-    console.log("mqtt connected")
-    router.wrap(client)
-})
+        console.log("mqtt connected")
+        router.wrap(client)
+    })
 }
 
 const mqttPublishAsync = (topic, payload) => {
