@@ -14,8 +14,8 @@ npm run dev
 expected log
 ```
 MQTT_USERNAME ftEeUSBBaVIR7IjREV1ZCQ7PyL3bcHmuIysQbWwXOdJy6NZx8I8Kb6GAlJKqNh0T
-Server is listening on port 4001
 The goose is open
+Server is listening on port 4001
 mqtt connected
 ```
 

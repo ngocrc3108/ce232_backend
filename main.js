@@ -1,19 +1,17 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const {mongoStore} = require("./src/mongodb")
+const { mongoStore, mongoOnOpen } = require("./src/mongodb")
 const session = require("express-session");
 const authenticate = require("./src/routers/authenticate");
 const { findUserBySeassion } = require("./src/controller/authController");
 const cors = require("cors");
 const deviceController = require("./src/routers/device");
 const {socketInit} = require("./src/socket")
+const { mqttInit } = require("./src/mqtt");
 
 // constaints
 const PORT = process.env.PORT || 4001;
-const http = app.listen(PORT, () => {
-    console.log(`Server is listening on port ${PORT}`);
-});
 
 let sessionOption = {
     secret: process.env.SECRET_KEY,
@@ -55,7 +53,13 @@ if (process.env.NODE_ENV === "production") {
 
 const sessionMiddleware = session(sessionOption);
 
-socketInit(http, sessionMiddleware);
+mongoOnOpen(() => {
+    const http = app.listen(PORT, () => {
+        console.log(`Server is listening on port ${PORT}`);
+    });
+    socketInit(http, sessionMiddleware);
+    mqttInit();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

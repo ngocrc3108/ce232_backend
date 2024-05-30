@@ -1,13 +1,18 @@
 const mongoose = require("mongoose");
 const MongoStore = require("connect-mongo");
 
-mongoose.connection
-    .on("open", () => console.log("The goose is open"))
+const mongoOnOpen = (callback) => {
+    mongoose.connection
+    .on("open", () => {
+        console.log("The goose is open");
+        callback();
+    })
     .on("close", () => console.log("The goose is closed"))
     .on("error", (error) => {
         console.log(error);
         process.exit();
     });
+}
 
 const clientPromise = mongoose
     .connect(process.env.DATABASE_URL)
@@ -15,4 +20,4 @@ const clientPromise = mongoose
 
 const mongoStore = MongoStore.create({ clientPromise });
 
-module.exports = { mongoStore };
+module.exports = { mongoStore, mongoOnOpen };

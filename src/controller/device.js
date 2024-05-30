@@ -1,6 +1,6 @@
 const { body } = require('express-validator')
-const {Fan, Led, Door} = require('../models/device')
-const {client, pushCmd} = require('../mqtt')
+const { Fan, Led, Door } = require('../models/device')
+const { pushCmd, mqttPublishAsync } = require('../mqtt')
 const { ObjectId } = require('mongodb');
 
 module.exports.getDevices = async (req, res) => {
@@ -57,7 +57,7 @@ module.exports.setState = async (req, res) => {
             cmd : "setState",
             state
         })
-        client.publishAsync(deviceId, `cmd=setState&requestId=${requestId}&state=${state ? "1" :"0"}`)
+        mqttPublishAsync(deviceId, `cmd=setState&requestId=${requestId}&state=${state ? "1" :"0"}`)
         res.send({message : "sent command successfully"})
         return        
     }
@@ -87,7 +87,7 @@ module.exports.setFanLevel = async (req, res) => {
             cmd : "setLevel",
             level : level
         })
-        client.publishAsync(deviceId, `cmd=setLevel&requestId=${requestId}&level=${level}`)
+        mqttPublishAsync(deviceId, `cmd=setLevel&requestId=${requestId}&level=${level}`)
         res.send({message : "sent command successfully"})
         return
     }
