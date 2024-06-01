@@ -8,7 +8,7 @@ const { findUserBySeassion } = require("./src/controller/authController");
 const cors = require("cors");
 const deviceController = require("./src/routers/device");
 const {socketInit} = require("./src/socket")
-const { mqttInit } = require("./src/mqtt");
+const { mqttInit, mqttPublishAsync } = require("./src/mqtt");
 
 // constaints
 const PORT = process.env.PORT || 4001;
