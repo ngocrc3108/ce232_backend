@@ -1,6 +1,8 @@
 const { CronJob, CronTime } = require('cron'); // https://www.npmjs.com/package/cron
 const { mqttPublishAsync } = require('./mqtt');
 const { Led } = require('./models/device');
+const { socketSend } = require('./socket');
+
 let jobs;
 
 async function onTick() {
@@ -9,6 +11,7 @@ async function onTick() {
     if(state !== undefined) {
         mqttPublishAsync(this.id, `cmd=setState&state=${state}`)
         const led = await Led.findById(this.id);
+        socketSend(led.userId, `sync/${this.id}/state`, {newState: state});
         led.state = state;
         led.save();
     }

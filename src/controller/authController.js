@@ -1,10 +1,15 @@
 const Users = require('../models/users')
 const bcrypt = require('bcrypt')
 const {validationResult} = require("express-validator")
+const { joinByUserId } = require('../socket');
+const { socketSend } = require('../socket');
 
 module.exports.isLoggedIn = (req, res) => {
-    console.log("is logged in was called", !!req.session.userId)
-    res.send({loggedIn : !!req.session.userId})
+    const { userId, id } = req.session;
+    console.log("is logged in was called", !!userId)
+    res.send({loggedIn : !!userId})
+    if(!!userId) 
+        joinByUserId(id, userId);
 }
 
 module.exports.register = async (req, res) => {
@@ -62,7 +67,7 @@ module.exports.login = async (req, res) => {
 module.exports.findUserBySeassion = async (req, res, next) => {
     try {
         const user = await Users.findById(req.session.userId)
-        if(user !== null && user?.seasionID != "") {
+        if(user !== null) {
             req.user = user
             next()
         }
