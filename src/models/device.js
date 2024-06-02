@@ -16,7 +16,7 @@ const ledsSchema = new mongoose.Schema ({
     name : String,
     state : {type : Number, default : 0},
     schedule : {
-        time : {type : Date, default : new Date()},
+        time : {type : Date, default : new Date(0, 0, 1, 0, 0, 0, 0)},
         option : {type : String, default : "NONE"},
     },
 }, {timestamps:true})

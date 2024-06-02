@@ -9,7 +9,7 @@ const cors = require("cors");
 const deviceController = require("./src/routers/device");
 const {socketInit} = require("./src/socket")
 const { mqttInit, mqttPublishAsync } = require("./src/mqtt");
-
+const { ledSchedulerInit } = require('./src/ledScheduler');
 // constaints
 const PORT = process.env.PORT || 4001;
 
@@ -66,25 +66,5 @@ mongoOnOpen(async () => {
     });
     socketInit(http, sessionMiddleware);
     mqttInit();
-
-    /*
-    led scheduler (Tung).
-    {
-        schedule: { time: 2024-05-19T07:03:36.714Z, option: 'OFF' },
-        userId: '65f97183eb8ef517c781539a',
-        state: 0,
-        createdAt: 2024-05-19T07:19:50.985Z,
-        type: 'led',
-        id: '6649a8168950f2c97e5cc8cd'
-    }
-    option: 'OFF' || 'ON' || 'NONE'
-    state: 0 || 1
-    */
-    console.log("find all leds");
-    const { Led } = require("./src/models/device");
-    let leds = await Led.find({}); // find all record
-    leds = leds.map((e) => e.toObject({ virtuals: true }));
-    console.log(leds);
-    const state = 0;
-    mqttPublishAsync(leds[0].id, `cmd=setState&state=${state}`)
+    ledSchedulerInit();
 });

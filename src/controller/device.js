@@ -2,6 +2,7 @@ const { body } = require('express-validator')
 const { Fan, Led, Door } = require('../models/device')
 const { pushCmd, mqttPublishAsync } = require('../mqtt')
 const { ObjectId } = require('mongodb');
+const { modifyJob } = require('../ledScheduler');
 
 module.exports.getDevices = async (req, res) => {
     console.log("get device was called")
@@ -65,8 +66,10 @@ module.exports.setState = async (req, res) => {
 
 module.exports.setSchedule = async (req, res) => {
     var {deviceId, schedule} = req.body;
+    schedule.time = new Date(schedule.time);
     const led = await Led.findOne({_id : deviceId, userId : req.user._id})
     if(led !== null) {
+        modifyJob({id: deviceId, schedule});
         led.schedule = schedule
         await led.save()
         res.send({message : "set led schedule successfully"})
