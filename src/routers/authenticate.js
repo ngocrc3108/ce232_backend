@@ -1,7 +1,6 @@
 const express = require('express')
 const authenRoute = express.Router()
-const bodyParser = require('body-parser')
-const {body} = require("express-validator")
+const { body } = require("express-validator")
 const authController = require('../controller/authController')
 
 authenRoute.post("/register", [
