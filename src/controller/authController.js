@@ -64,18 +64,22 @@ module.exports.login = async (req, res) => {
     }
 }
 
-module.exports.findUserBySeassion = async (req, res, next) => {
+module.exports.findUserBySession = async (req, res, next) => {
     try {
-        const user = await Users.findById(req.session.userId)
-        if(user !== null) {
-            req.user = user
-            next()
+        if(req.session.userId !== undefined) {
+            const user = await Users.findById(req.session.userId)
+            if(user !== null) {
+                req.user = user
+                next()
+                return
+            }
+            res.status(409).send({message: "invalid session"}) // conflict status
         }
         else
-            res.send({message : "you have not logged in yet"})
+            res.status(401).send({message : "you have not logged in yet"})
     } catch (err) {
         console.log(err)
-    } 
+    }
 }
 
 module.exports.logout = async (req, res) => {

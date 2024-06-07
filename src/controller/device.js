@@ -1,4 +1,3 @@
-const { body } = require('express-validator')
 const { Fan, Led, Door } = require('../models/device')
 const { pushCmd, mqttPublishAsync } = require('../mqtt')
 const { ObjectId } = require('mongodb');
