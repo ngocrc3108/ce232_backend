@@ -1,5 +1,5 @@
 const { Fan, Led, Door } = require('../models/device')
-const { pushCmd, mqttPublishAsync } = require('../mqtt')
+const { mqttPublishWithAck } = require('../mqtt')
 const { ObjectId } = require('mongodb');
 const { modifyJob } = require('../ledScheduler');
 
@@ -51,16 +51,19 @@ module.exports.setState = async (req, res) => {
 
     const device = await Model.findById(deviceId)
     if(device != null) {
-        const requestId = pushCmd({
-            sessionId : req.sessionID,
-            deviceId,
-            cmd : "setState",
-            state
-        })
-        mqttPublishAsync(deviceId, `cmd=setState&requestId=${requestId}&state=${state ? "1" :"0"}`)
-        res.send({message : "sent command successfully"})
-        return        
+        const success = await mqttPublishWithAck(deviceId, `cmd=setState&state=${state ? "1" :"0"}`)
+        console.log("success", success);
+        res.send({ success })
+
+        if(success) {
+            device.state = state
+            device.save()
+        }
+
+        return
     }
+
+    res.send({ success: false })
 }
 
 module.exports.setSchedule = async (req, res) => {
@@ -82,18 +85,19 @@ module.exports.setFanLevel = async (req, res) => {
     console.log("set level was call")
 
     const fan = await Fan.findOne({_id : deviceId, userId : req.user._id})
-    if(fan !== null) {
-        const requestId = pushCmd({
-            sessionId : req.sessionID,
-            deviceId,
-            cmd : "setLevel",
-            level : level
-        })
-        mqttPublishAsync(deviceId, `cmd=setLevel&requestId=${requestId}&level=${level}`)
-        res.send({message : "sent command successfully"})
+    if(fan != null) {
+        const success = await mqttPublishWithAck(deviceId, `cmd=setLevel&level=${level}`)
+        res.send({ success })
+
+        if(success) {
+            fan.level = level
+            fan.save()
+        }
+
         return
     }
-    res.send({message : "device not found"})    
+
+    res.send({ success: false })
 }
 
 module.exports.add = async (req, res) => {

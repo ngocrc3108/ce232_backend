@@ -8,7 +8,7 @@ const authenticateRouter = require("./src/routers/authenticate");
 const { findUserBySession } = require("./src/controller/authController");
 const deivceRouter = require("./src/routers/device");
 const {socketInit} = require("./src/socket")
-const { mqttInit, mqttPublishAsync } = require("./src/mqtt");
+const { mqttInit } = require("./src/mqtt");
 const { ledSchedulerInit } = require('./src/ledScheduler');
 // constaints
 const PORT = process.env.PORT || 4001;

@@ -3,7 +3,7 @@ const e = require('cors');
 const {socketSend} = require("../src/socket")
 const {Led, Fan, Door} = require("./models/device")
 const mqtt = require("mqtt");
-const mqttRouter = require('mqtt-simple-router')
+const mqttRouter = require('mqtt-simple-router');
 const router = new mqttRouter()
 let client;
 
@@ -18,48 +18,34 @@ const mqttInit = async () => {
     })
 }
 
-const mqttPublishAsync = (topic, payload) => {
-    client.publishAsync(topic, payload);
-}
-
-const controlRequests = {count : 0,
-                        cmds : []
+/* messages = [{messageID : Number, resolve: function] */
+const mqttMessageManager = {
+    message_count: 0,
+    messages: [],
+    setResolve: (messageID, result) => {
+        const index = mqttMessageManager.messages.findIndex((e) => e.messageID == messageID);
+        if(index !== -1) {
+            mqttMessageManager.messages[index].resolve(result);
+            mqttMessageManager.messages.splice(index, 1);
+        }
+    }
 };
 
+const mqttPublishWithAck = async (topic, payload) => {
+    const messageID = mqttMessageManager.message_count;
+    mqttMessageManager.message_count++;
+    client.publishAsync(topic, `messageID=${messageID}&${payload}`);
+
+    return new Promise((resolve, rejects) => {
+        mqttMessageManager.messages.push({
+            messageID,
+            resolve,
+        });
+        setTimeout(() => mqttMessageManager.setResolve(messageID, false), 10*1000);
+    })
+}
+
 console.log("MQTT_USERNAME", process.env.MQTT_USERNAME)
-
-const pushCmd = (object) => {
-    controlRequests.cmds.push({...object,
-    id : controlRequests.count,
-    time : new Date()
-    })
-    return controlRequests.count++ // id
-}
-
-const popCmd = (id) => {
-    let cmd = undefined
-    const cmdIndex = controlRequests.cmds.findIndex(cmd => cmd.id == id) //cmd.id is a number
-    if(cmdIndex !== -1) {
-        cmd = controlRequests.cmds[cmdIndex]
-        controlRequests.cmds.splice(cmdIndex, 1);
-    }
-    return cmd
-}
-
-const checkCmdDate = () => {
-    const newCmd = []
-    const time = (new Date()).getTime()
-    controlRequests.cmds.forEach(cmd => {
-        if(time - cmd.time.getTime() < 10000)
-            newCmd.push(cmd)
-        else {
-            socketSend(cmd.sessionId, `res/${cmd.deviceId}/state`, {...cmd, success: false})
-        }
-    })
-    controlRequests.cmds = newCmd
-}
-
-setInterval(checkCmdDate, 200)
 
 const getParameter = (query, key) => {
     var index = query.indexOf(key)
@@ -104,41 +90,10 @@ router.auto('esp32/door/sync', async function(request) {
     client.publishAsync(deviceId, `cmd=sync&state=${state}`)
 });
 
-router.auto('esp32/:type/response', async function(request) {
-    const { type } = request.params
-    const query = request.payload.toString()
-    console.log(`esp32/${type}/response was called`)
+router.auto('esp32/ack', async function(request) {
+    const query = request.payload.toString();
+    const messageID = parseInt(getParameter(query, "messageID="));
+    mqttMessageManager.setResolve(messageID, true);
+})
 
-    console.log(query)
-    if(getParameter(query, "success=") == "1") {
-        console.log("here")
-        const requestId = getParameter(query, "requestId=")
-        const cmd = popCmd(requestId)
-        console.log(cmd)
-        if(cmd === undefined) 
-            return
-
-        if(cmd.cmd == "setState") {
-            console.log("detect setState")
-            socketSend(cmd.sessionId, `res/${cmd.deviceId}/state`, {...cmd, success: true})
-            let model;
-            switch(type) {
-                case "led": model = Led; break;
-                case "fan": model = Fan; break;
-                case "door": model = Door; break;
-                default : return;
-            }
-            const device = await model.findById(cmd.deviceId)
-            device.state = cmd.state
-            await device.save()
-        } else if(cmd.cmd == "setLevel") {
-            console.log("detect setLevel")
-            socketSend(cmd.sessionId, `res/${cmd.deviceId}/level`, {...cmd, success: true})
-            const device = await Fan.findById(cmd.deviceId)
-            device.level = cmd.level
-            await device.save()       
-        }
-    }
-});
-
-module.exports = { pushCmd, controlRequests, mqttInit, mqttPublishAsync }
+module.exports = { mqttInit, mqttPublishWithAck }
