@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(sessionMiddleware);
 app.use("/api/admin", adminRouter);
 app.use("/api/user/auth", authenticateRouter);
-app.use("/api/user/", findUserBySession); // requires user login.
+app.use("/api/user", findUserBySession); // requires user login.
 app.use("/api/user/device", findUserBySession, deivceRouter);
 
 app.use(express.static(path.join(__dirname, '../ce232_frontend/build')));
