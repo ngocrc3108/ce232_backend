@@ -1,5 +1,4 @@
 require('dotenv').config()
-const e = require('cors');
 const {Led, Fan, Door} = require("./models/device")
 const mqtt = require("mqtt");
 const mqttRouter = require('mqtt-simple-router');
@@ -56,7 +55,7 @@ const getParameter = (query, key) => {
     return ""
 }
 
-router.auto('esp32/fan/sync', async function(request) {
+async function syncFan(request) {
     const query = request.payload.toString()
     console.log(`esp32/fan/sync was called`)
 
@@ -65,9 +64,9 @@ router.auto('esp32/fan/sync', async function(request) {
     const fan = await Fan.findById(deviceId)
     const {state, level} = fan
     client.publishAsync(deviceId, `cmd=sync&state=${state}&level=${level}`)
-});
+}
 
-router.auto('esp32/led/sync', async function(request) {
+async function syncLed(request) {
     const query = request.payload.toString()
     console.log(`esp32/led/sync was called`)
 
@@ -76,9 +75,9 @@ router.auto('esp32/led/sync', async function(request) {
     const led = await Led.findById(deviceId)
     const {state} = led
     client.publishAsync(deviceId, `cmd=sync&state=${state}`)
-});
+}
 
-router.auto('esp32/door/sync', async function(request) {
+async function syncDoor(request) {
     const query = request.payload.toString()
     console.log(`esp32/door/sync was called`)
 
@@ -87,12 +86,17 @@ router.auto('esp32/door/sync', async function(request) {
     const door = await Door.findById(deviceId)
     const {state} = door
     client.publishAsync(deviceId, `cmd=sync&state=${state}`)
-});
+}
 
-router.auto('esp32/ack', async function(request) {
+async function HandleACK(request) {
     const query = request.payload.toString();
     const messageID = parseInt(getParameter(query, "messageID="));
     mqttMessageManager.setResolve(messageID, true);
-})
+}
+
+router.auto('esp32/fan/sync', syncFan);
+router.auto('esp32/led/sync', syncLed);
+router.auto('esp32/door/sync', syncDoor);
+router.auto('esp32/ack', HandleACK);
 
 module.exports = { mqttInit, mqttPublishWithAck }

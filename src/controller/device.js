@@ -51,7 +51,7 @@ module.exports.setState = async (req, res) => {
 
     const device = await Model.findById(deviceId)
     if(device != null) {
-        const success = await mqttPublishWithAck(deviceId, `cmd=setState&state=${state ? "1" :"0"}`)
+        const success = await mqttPublishWithAck(deviceId, `cmd=setState&state=${state}`)
         console.log("success", success);
         res.send({ success })
 
