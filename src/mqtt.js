@@ -34,7 +34,7 @@ const mqttMessageManager = {
 const mqttPublishWithAck = async (topic, payload) => {
     const messageID = mqttMessageManager.message_count;
     mqttMessageManager.message_count++;
-    client.publishAsync(topic, `messageID=${messageID}&${payload}`);
+    client.publish(topic, `messageID=${messageID}&${payload}`, {qos: 2}, (err) => console.log("qos", err));
 
     return new Promise((resolve, rejects) => {
         mqttMessageManager.messages.push({

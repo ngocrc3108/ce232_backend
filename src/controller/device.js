@@ -88,6 +88,7 @@ module.exports.setFanLevel = async (req, res) => {
     if(fan != null) {
         const success = await mqttPublishWithAck(deviceId, `cmd=setLevel&level=${level}`)
         res.send({ success })
+        console.log("fan level, success", success);
 
         if(success) {
             fan.level = level
