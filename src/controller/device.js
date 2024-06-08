@@ -19,24 +19,6 @@ module.exports.getDevices = async (req, res) => {
     res.send(devices)
 }
 
-module.exports.create = async (req, res) => {
-    const { type } = req.params
-    let Model;
-    switch(type) {
-        case "led": Model = Led; break;
-        case "fan": Model = Fan; break;
-        case "door": Model = Door; break;
-        default : return;
-    }
-
-    const device = await Model.create({userId : req.user._id, name : req.body.name})
-    console.log(`create ${type}`, device)
-    if(device) 
-        res.send({message : `create ${type} successfully`})
-    else
-        res.send({message : `create ${type} fail`})
-}
-
 module.exports.setState = async (req, res) => {
     const {state, deviceId } = req.body
     const { type } = req.params
@@ -121,7 +103,7 @@ module.exports.add = async (req, res) => {
             return
         }
 
-        if(device.userId == "") {
+        if(device.userId == "" || device.userId === undefined) {
             device.userId = req.user._id
             device.name = name
             const message = `add ${type} successfully`
