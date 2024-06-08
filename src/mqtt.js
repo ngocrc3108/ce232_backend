@@ -1,6 +1,5 @@
 require('dotenv').config()
 const e = require('cors');
-const {socketSend} = require("../src/socket")
 const {Led, Fan, Door} = require("./models/device")
 const mqtt = require("mqtt");
 const mqttRouter = require('mqtt-simple-router');
@@ -10,7 +9,7 @@ let client;
 const mqttInit = async () => {
     client = mqtt.connect("mqtt://mqtt.flespi.io", {
        username: process.env.MQTT_USERNAME,
-       clientId: "nodejs_server"
+       clientId: `nodejs_${process.env.NODE_ENV}_${(new Date()).getTime()}`
    });
    client.on("connect", () => {
         console.log("mqtt connected")

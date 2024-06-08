@@ -1,5 +1,5 @@
 const { CronJob, CronTime } = require('cron'); // https://www.npmjs.com/package/cron
-const { mqttPublishAsync } = require('./mqtt');
+const { mqttPublishWithAck } = require('./mqtt');
 const { Led } = require('./models/device');
 const { socketSend } = require('./socket');
 
@@ -9,11 +9,16 @@ async function onTick() {
     console.log('do something with this', this);
     const state = this.schedule.option == "OFF" ? 0 : this.schedule.option == "ON" ? 1 : undefined;
     if(state !== undefined) {
-        mqttPublishAsync(this.id, `cmd=setState&state=${state}`)
-        const led = await Led.findById(this.id);
-        socketSend(led.userId, `sync/${this.id}/state`, {newState: state});
-        led.state = state;
-        led.save();
+        const success = await mqttPublishWithAck(this.id, `cmd=setState&state=${state}`)
+        if(success) {
+            console.log("Hereeeeeeeeeeeeeee");
+            const led = await Led.findById(this.id);
+            socketSend(led.userId, `sync/${this.id}/state`, {newState: state});
+            led.state = state;
+            led.save();
+        }
+        else
+            console.log("can not send schedule led to esp");
     }
 }
 
