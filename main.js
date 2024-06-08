@@ -24,15 +24,15 @@ const sessionMiddleware = session(sessionOption);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../ce232_frontend/build')));
 
-app.get('/', function (req, res) {
-  res.sendFile(path.join(__dirname, '../ce232_frontend/build', 'index.html'));
-});
 app.use(sessionMiddleware);
 app.use("/auth", authenticateRouter);
-app.use(findUserBySession); // require user login
-app.use("/device", deivceRouter);
+app.use("/device", findUserBySession, deivceRouter);
+
+app.use(express.static(path.join(__dirname, '../ce232_frontend/build')));
+app.get('/*', function (req, res) {
+  res.sendFile(path.join(__dirname, '../ce232_frontend/build', 'index.html'));
+});
 
 mongoOnOpen(async () => {
     const http = app.listen(PORT, () => {
