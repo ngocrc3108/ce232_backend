@@ -7,6 +7,7 @@ const session = require("express-session");
 const authenticateRouter = require("./src/routers/authenticate");
 const { findUserBySession } = require("./src/controller/authController");
 const deivceRouter = require("./src/routers/device");
+const adminRouter = require("./src/routers/admin");
 const {socketInit} = require("./src/socket")
 const { mqttInit } = require("./src/mqtt");
 const { ledSchedulerInit } = require('./src/ledScheduler');
@@ -28,6 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(sessionMiddleware);
 app.use("/auth", authenticateRouter);
 app.use("/device", findUserBySession, deivceRouter);
+app.use("/api/admin", adminRouter);
 
 app.use(express.static(path.join(__dirname, '../ce232_frontend/build')));
 app.get('/*', function (req, res) {
