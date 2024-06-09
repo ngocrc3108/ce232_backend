@@ -32,6 +32,14 @@ app.use("/api/user/auth", authenticateRouter);
 app.use("/api/user", findUserBySession); // requires user login.
 app.use("/api/user/device", findUserBySession, deivceRouter);
 
+/* ---------------- render frontend ---------------- */
+app.use((req, res, next) => {
+    const paths = ["/", "/add"];
+    if(paths.includes(req.path) && req.session.userId === undefined)
+        res.redirect("/login");
+    else
+        next();
+});
 app.use(express.static(path.join(__dirname, '../ce232_frontend/build')));
 app.get('/*', function (req, res) {
   res.sendFile(path.join(__dirname, '../ce232_frontend/build', 'index.html'));
