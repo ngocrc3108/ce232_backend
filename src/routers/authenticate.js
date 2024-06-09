@@ -15,8 +15,6 @@ authenRoute.post("/register", [
     authController.register
 ])
 
-authenRoute.get("/isLoggedIn", authController.isLoggedIn)
-
 authenRoute.post("/login", authController.login)
 authenRoute.post("/logout", authController.logout)
 

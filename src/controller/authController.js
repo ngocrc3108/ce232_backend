@@ -4,14 +4,6 @@ const {validationResult} = require("express-validator")
 const { joinByUserId } = require('../socket');
 const { socketSend } = require('../socket');
 
-module.exports.isLoggedIn = (req, res) => {
-    const { userId, id } = req.session;
-    console.log("is logged in was called", !!userId)
-    res.send({loggedIn : !!userId})
-    if(!!userId) 
-        joinByUserId(id, userId);
-}
-
 module.exports.register = async (req, res) => {
     const {username, password} = req.body
     const validateResult = validationResult(req)
@@ -84,7 +76,7 @@ module.exports.findUserBySession = async (req, res, next) => {
 
 module.exports.logout = async (req, res) => {
     try {
-        req.session.userId = ""
+        req.session.userId = undefined
         res.send({success : true, message : "logout successfully"})
     } catch (err) {
         console.log(err)

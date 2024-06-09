@@ -35,7 +35,7 @@ app.use("/api/user/device", findUserBySession, deivceRouter);
 /* ---------------- render frontend ---------------- */
 app.use((req, res, next) => {
     const paths = ["/", "/add"];
-    if(paths.includes(req.path) && req.session.userId === undefined)
+    if(paths.includes(req.path) && (req.session.userId === undefined))
         res.redirect("/login");
     else
         next();
