@@ -11,7 +11,6 @@ async function onTick() {
     if(state !== undefined) {
         const success = await mqttPublishWithAck(this.id, `cmd=setState&state=${state}`)
         if(success) {
-            console.log("Hereeeeeeeeeeeeeee");
             const led = await Led.findById(this.id);
             socketSend(led.userId, `sync/${this.id}/state`, {newState: state});
             led.state = state;
