@@ -1,6 +1,5 @@
 const { Fan, Led, Door } = require('../models/device')
 const { mqttPublishWithAck } = require('../mqtt')
-const { ObjectId } = require('mongodb');
 const { modifyJob } = require('../ledScheduler');
 
 module.exports.getDevices = async (req, res) => {
@@ -94,7 +93,8 @@ module.exports.add = async (req, res) => {
         default : return;
     }
     try {
-        const device = await Model.findById(new ObjectId(id))
+        //const object_id = new ObjectId(id);
+        const device = await Model.findById(id);
         console.log(device)
         if(device === null) {
             const message = `${type} id doesn't exist`
@@ -119,6 +119,6 @@ module.exports.add = async (req, res) => {
         return    
     } catch (err) {
         console.log(err)
-        res.send({err})
+        res.send({success : false, message: "invalid id", err})
     }
 }
