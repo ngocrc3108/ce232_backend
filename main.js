@@ -80,29 +80,11 @@ mongoOnOpen(async () => {
     option: 'OFF' || 'ON' || 'NONE'
     state: 0 || 1
     */
-
     console.log("find all leds");
     const { Led } = require("./src/models/device");
     let leds = await Led.find({}); // find all record
     leds = leds.map((e) => e.toObject({ virtuals: true }));
-    //console.log(leds);
-    leds.forEach((led) => {
-        const { time, option } = led.schedule;
-        console.log("Time:", time);  
-        console.log("Option:", option);
-        const state = option == "ON"? 1 : 0;
-
-        const currentTime = new Date();
-        const scheduledTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), time.getHours(), time.getMinutes(), time.getSeconds());
-        const delay = scheduledTime.getTime() < currentTime.getTime() ? 
-        (1000*60*60*24-(currentTime.getTime() - scheduledTime.getTime())) : (scheduledTime.getTime() - currentTime.getTime());
-      
-        console.log("Current Time:", currentTime);
-        console.log("Scheduled Time:", scheduledTime);
-        console.log("Delay:", delay);
-        
-        setTimeout(() => {
-            mqttPublishAsync(led.id, `cmd=setState&state=${state}`);
-        }, delay);
-    });
+    console.log(leds);
+    const state = 0;
+    mqttPublishAsync(leds[0].id, `cmd=setState&state=${state}`)
 });
