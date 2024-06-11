@@ -42,7 +42,7 @@ module.exports.login = async (req, res) => {
 
         if(user == null || !bcrypt.compareSync(password, user.password)) {
             res.send({success : false, message : "Username or passwod is wrong"})
-            console.log("auth/login: username or passwod is wrong")
+            console.log("auth/login: username or password is wrong")
             return                
         }
         
