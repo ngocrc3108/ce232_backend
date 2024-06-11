@@ -1,8 +1,6 @@
 const Users = require('../models/users')
 const bcrypt = require('bcrypt')
 const {validationResult} = require("express-validator")
-const { joinByUserId } = require('../socket');
-const { socketSend } = require('../socket');
 
 module.exports.register = async (req, res) => {
     const {username, password} = req.body

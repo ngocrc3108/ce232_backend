@@ -1,4 +1,5 @@
 const { Fan, Led, Door } = require('../models/device')
+const { addJob } = require('../ledScheduler');
 
 module.exports.create = async (req, res) => {
     const { type } = req.params;
@@ -19,4 +20,7 @@ module.exports.create = async (req, res) => {
         });
     else
         res.send({message : `create ${type} fail`});
+
+    if(type == "led")
+        addJob(device);
 };
